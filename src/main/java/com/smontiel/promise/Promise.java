@@ -14,7 +14,6 @@ import java.util.function.Function;
  * Created by Salvador Montiel on 02/enero/2018.
  */
 // TODO: Check exceptions on 'then' methods
-// TODO: Make 'fromCallable' method async
 // TODO: Add Java 6 support
 public abstract class Promise<T> implements PromiseSource<T> {
     /**
@@ -83,7 +82,7 @@ public abstract class Promise<T> implements PromiseSource<T> {
      * @return a Promise whose {@link Observer}s' subscriptions trigger an invocation of the given function
      * @since 0.1
      */
-    public static <T> Promise<T> fromCallable(Callable<? extends T> supplier) {
+    public static <T> Promise<T> fromCallable(Callable<T> supplier) {
         ObjectHelper.requireNonNull(supplier, "supplier is null");
         return PromisePlugins.onAssembly(new PromiseFromCallable<T>(supplier));
     }
