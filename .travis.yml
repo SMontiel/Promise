@@ -1,3 +1,8 @@
 language: java
 jdk: oraclejdk8
 
+# prevent travis running gradle assemble; let the build script do it anyway
+install: true
+
+# # running in container causes test failures and 2x-3x longer build, use standalone instances
+sudo: required
