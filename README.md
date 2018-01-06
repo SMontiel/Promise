@@ -2,6 +2,8 @@
 
 # Promise
 
+[![](https://jitpack.io/v/SMontiel/Promise.svg)](https://jitpack.io/#SMontiel/Promise) [![Build Status](https://travis-ci.org/SMontiel/Promise.svg?branch=master)](https://travis-ci.org/SMontiel/Promise)
+
 A promise represents a future value (usually of an asynchronous operation).
 
 This is a simple implementation of Promises/A+ in Java, based on RxJava's architecture.
