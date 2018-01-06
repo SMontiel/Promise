@@ -2,8 +2,9 @@ package com.smontiel.promise.internal.operators;
 
 import com.smontiel.promise.Observer;
 import com.smontiel.promise.PromiseSource;
+import com.smontiel.promise.exceptions.Exceptions;
 import com.smontiel.promise.internal.ObjectHelper;
-import com.smontiel.promise.internal.operators.utils.BasicFuseableObserver;
+import com.smontiel.promise.internal.PromisePlugins;
 
 import java.util.function.Function;
 
@@ -21,11 +22,15 @@ public final class PromiseThen<T, U> extends AbstractPromiseWithUpstream<T, U> {
     }
 
 
-    static final class MapObserver<T, U> extends BasicFuseableObserver<T, U> {
+    static final class MapObserver<T, U> implements Observer<T> {
+        /** The downstream subscriber. */
+        protected final Observer<? super U> actual;
         final Function<? super T, ? extends U> mapper;
+        /** Flag indicating no further onXXX event should be accepted. */
+        protected boolean done;
 
         MapObserver(Observer<? super U> actual, Function<? super T, ? extends U> mapper) {
-            super(actual);
+            this.actual = actual;
             this.mapper = mapper;
         }
 
@@ -35,11 +40,6 @@ public final class PromiseThen<T, U> extends AbstractPromiseWithUpstream<T, U> {
                 return;
             }
             done = true;
-
-            if (sourceMode != NONE) {
-                actual.onComplete(null);
-                return;
-            }
 
             U v;
 
@@ -53,14 +53,22 @@ public final class PromiseThen<T, U> extends AbstractPromiseWithUpstream<T, U> {
         }
 
         @Override
-        public int requestFusion(int mode) {
-            return transitiveBoundaryFusion(mode);
+        public void onError(Throwable t) {
+            if (done) {
+                PromisePlugins.onError(t);
+                return;
+            }
+            done = true;
+            actual.onError(t);
         }
 
-        @Override
-        public U poll() throws Exception {
-            T t = qs.poll();
-            return t != null ? ObjectHelper.<U>requireNonNull(mapper.apply(t), "The mapper function returned a null value.") : null;
+        /**
+         * Rethrows the throwable if it is a fatal exception or calls {@link #onError(Throwable)}.
+         * @param t the throwable to rethrow or signal to the actual subscriber
+         */
+        protected final void fail(Throwable t) {
+            Exceptions.throwIfFatal(t);
+            onError(t);
         }
     }
 }

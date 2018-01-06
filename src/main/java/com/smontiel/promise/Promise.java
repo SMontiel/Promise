@@ -146,7 +146,7 @@ public abstract class Promise<T> implements PromiseSource<T> {
      * and routed to the PromisePlugins.onError handler.
      * @since 0.1
      */
-    public void done() {
+    public final void done() {
         subscribe(new Observer<T>() {
 
             @Override public void onComplete(T value) {}
