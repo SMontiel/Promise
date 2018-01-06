@@ -17,13 +17,12 @@ package com.smontiel.promise.internal.operators;
 
 import com.smontiel.promise.Observer;
 import com.smontiel.promise.Promise;
-import com.smontiel.promise.internal.ScalarCallable;
 
 /**
  * Represents a constant scalar value.
  * @param <T> the value type
  */
-public final class PromiseJust<T> extends Promise<T> implements ScalarCallable<T> {
+public final class PromiseJust<T> extends Promise<T> {
 
     private final T value;
 
@@ -34,10 +33,5 @@ public final class PromiseJust<T> extends Promise<T> implements ScalarCallable<T
     @Override
     protected void subscribeActual(Observer<? super T> s) {
         s.onComplete(value);
-    }
-
-    @Override
-    public T call() {
-        return value;
     }
 }
