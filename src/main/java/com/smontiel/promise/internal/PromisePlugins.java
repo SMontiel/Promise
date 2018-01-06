@@ -47,12 +47,6 @@ public final class PromisePlugins {
     static volatile boolean lockdown;
 
     /**
-     * If true, attempting to run a blockingX operation on a (by default)
-     * computation or single scheduler will throw an IllegalStateException.
-     */
-    static volatile boolean failNonBlockingScheduler;
-
-    /**
      * Prevents changing the plugins from then on.
      * <p>This allows container-like environments to prevent clients
      * messing with plugins.
@@ -67,33 +61,6 @@ public final class PromisePlugins {
      */
     public static boolean isLockdown() {
         return lockdown;
-    }
-
-    /**
-     * Enables or disables the blockingX operators to fail
-     * with an IllegalStateException on a non-blocking
-     * scheduler such as computation or single.
-     * <p>History: 2.0.5 - experimental
-     * @param enable enable or disable the feature
-     * @since 2.1
-     */
-    public static void setFailOnNonBlockingScheduler(boolean enable) {
-        if (lockdown) {
-            throw new IllegalStateException("Plugins can't be changed anymore");
-        }
-        failNonBlockingScheduler = enable;
-    }
-
-    /**
-     * Returns true if the blockingX operators fail
-     * with an IllegalStateException on a non-blocking scheduler
-     * such as computation or single.
-     * <p>History: 2.0.5 - experimental
-     * @return true if the blockingX operators fail on a non-blocking scheduler
-     * @since 2.1
-     */
-    public static boolean isFailOnNonBlockingScheduler() {
-        return failNonBlockingScheduler;
     }
 
     /**
@@ -208,7 +175,6 @@ public final class PromisePlugins {
         setOnObservableAssembly(null);
         setOnObservableSubscribe(null);
 
-        setFailOnNonBlockingScheduler(false);
         setOnBeforeBlocking(null);
     }
 
@@ -255,7 +221,7 @@ public final class PromisePlugins {
      * @return the hook function, may be null
      */
     @SuppressWarnings("rawtypes")
-    public static BiFunction<? super Promise, ? super Observer, ? extends Observer> getOnObservableSubscribe() {
+    public static BiFunction<? super Promise, ? super Observer, ? extends Observer> getOnPromiseSubscribe() {
         return onPromiseSubscribe;
     }
 
@@ -322,7 +288,6 @@ public final class PromisePlugins {
      * should not block but throw an IllegalArgumentException.
      * <p>History: 2.0.5 - experimental
      * @return true if the blocking should be prevented
-     * @see #setFailOnNonBlockingScheduler(boolean)
      * @since 2.1
      */
     public static boolean onBeforeBlocking() {
