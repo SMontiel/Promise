@@ -14,7 +14,6 @@ import java.util.function.Function;
  * Created by Salvador Montiel on 02/enero/2018.
  */
 // TODO: Check exceptions on 'then' methods
-// TODO: Handle states (Funfilled, pending, rejected)
 // TODO: Make 'fromCallable' method async
 // TODO: Add Java 6 support
 public abstract class Promise<T> implements PromiseSource<T> {
@@ -93,14 +92,20 @@ public abstract class Promise<T> implements PromiseSource<T> {
      * Returns a Promise that calls the appropriate onComplete consumer (shared between all subscribers) whenever a signal with the same type
      * passes through, before forwarding them to downstream.
      *
-     * @param onComplete
+     * @param onFulfilled
      *             the {@code Consumer<T>} you have designed to accept emissions from the PromiseSource
      * @return the source PromiseSource with the side-effecting behavior applied
      * @since 0.1
      */
-    public final Promise<T> then(Consumer<? super T> onComplete) {
-        ObjectHelper.requireNonNull(onComplete, "onComplete is null");
-        return PromisePlugins.onAssembly(new PromiseDoOnEach<T>(this, onComplete, Functions.emptyConsumer(), Functions.EMPTY_RUNNABLE));
+    public final Promise<T> then(Consumer<? super T> onFulfilled) {
+        ObjectHelper.requireNonNull(onFulfilled, "onFulfilled is null");
+        return PromisePlugins.onAssembly(new PromiseDoOnEach<T>(this, onFulfilled, Functions.emptyConsumer(), Functions.EMPTY_RUNNABLE));
+    }
+
+    public final Promise<T> then(Consumer<? super T> onFulfilled, Consumer<? super Throwable> onRejected) {
+        ObjectHelper.requireNonNull(onFulfilled, "onFulfilled is null");
+        ObjectHelper.requireNonNull(onRejected, "onRejected is null");
+        return PromisePlugins.onAssembly(new PromiseDoOnEach<T>(this, onFulfilled, onRejected, Functions.EMPTY_RUNNABLE));
     }
 
     /**
@@ -108,30 +113,30 @@ public abstract class Promise<T> implements PromiseSource<T> {
      * emits the results of these function applications.
      *
      * @param <R> the output type
-     * @param mapper
+     * @param onFulfilled
      *            a function to apply to each item emitted by the PromiseSource
      * @return a Promise that emits the items from the source PromiseSource, transformed by the specified
      *         function
      * @since 0.1
      */
-    public final <R> Promise<R> then(Function<? super T, ? extends R> mapper) {
-        ObjectHelper.requireNonNull(mapper, "mapper is null");
-        return PromisePlugins.onAssembly(new PromiseThen<T, R>(this, mapper));
+    public final <R> Promise<R> then(Function<? super T, ? extends R> onFulfilled) {
+        ObjectHelper.requireNonNull(onFulfilled, "onFulfilledMapper is null");
+        return PromisePlugins.onAssembly(new PromiseThen<T, R>(this, onFulfilled));
     }
 
     /**
      * Returns a Promise that calls the appropriate onError consumer (shared between all subscribers) whenever a signal with the same type
      * passes through, before forwarding them to downstream.
      *
-     * @param onError
+     * @param onRejected
      *             the {@code Consumer<Throwable>} you have designed to accept any error notification from the
      *             PromiseSource
      * @return the source PromiseSource with the side-effecting behavior applied
      * @since 0.1
      */
-    public final Promise<T> fail(Consumer<? super Throwable> onError) {
-        ObjectHelper.requireNonNull(onError, "onError is null");
-        return PromisePlugins.onAssembly(new PromiseDoOnEach<T>(this, Functions.emptyConsumer(), onError, Functions.EMPTY_RUNNABLE));
+    public final Promise<T> fail(Consumer<? super Throwable> onRejected) {
+        ObjectHelper.requireNonNull(onRejected, "onRejected is null");
+        return PromisePlugins.onAssembly(new PromiseDoOnEach<T>(this, Functions.emptyConsumer(), onRejected, Functions.EMPTY_RUNNABLE));
     }
 
     /**
